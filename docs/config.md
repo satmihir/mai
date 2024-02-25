@@ -26,6 +26,9 @@ Trying a test prompt....
 Prompt successful! You are good to go.
 ```
 
+## Show Config
+You can simply run `mai config show` for a quick view of the pretty-printed config.json file.
+
 ## Default Model
 Mai needs a default model to run many of the "fast" operations. If no default is specified, we assume the first model from the config as the default. If you want to change that, you can set default as follows:
 
