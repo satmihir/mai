@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 package llm
 
-import "io"
+import (
+	"io"
+
+	"github.com/pkg/errors"
+	"github.com/satmihir/mai/config"
+)
 
 // Represents a single message in the message history sent to the model.
 type Message struct {
@@ -65,4 +70,47 @@ type Completion struct {
 type LLM interface {
 	// Completes a prompt and returns the completion.
 	Complete(prompt *Prompt) (*Completion, error)
+}
+
+// The registry to hold and vend models for the app
+type ModelRegistry struct {
+	registry         map[string]LLM
+	defaultModelName string
+}
+
+// Build a model registry for the given AppConfig
+func NewModelRegistry(appConfig *config.AppConfig) (*ModelRegistry, error) {
+	var defaultModelName string
+	reg := make(map[string]LLM)
+	for i, m := range appConfig.Models {
+		if i == 0 {
+			defaultModelName = m.Name
+		}
+
+		switch m.Provider {
+		case "openai":
+			l, err := NewOpenAiLlm(m)
+			if err != nil {
+				return nil, err
+			}
+
+			reg[m.Name] = l
+		default:
+			return nil, errors.Errorf("Provider %s not supported", m.Provider)
+		}
+	}
+
+	return &ModelRegistry{
+		registry:         reg,
+		defaultModelName: defaultModelName,
+	}, nil
+}
+
+func (mr *ModelRegistry) GetDefaultModel() (LLM, bool) {
+	return mr.GetModel(mr.defaultModelName)
+}
+
+func (mr *ModelRegistry) GetModel(modelName string) (LLM, bool) {
+	l, ok := mr.registry[modelName]
+	return l, ok
 }

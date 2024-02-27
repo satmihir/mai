@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -15,6 +17,8 @@ const (
 	defaultConfigDir = ".mai"
 	// The name of the configuration file.
 	configFileName = "config.json"
+	// The current version of the config
+	configFileVersion = "v1"
 )
 
 // Represents a single model in the configuration.
@@ -27,6 +31,7 @@ type Model struct {
 
 // Represents the configuration of the mai inatallaion.
 type AppConfig struct {
+	Version      string   `json:"version"`
 	Models       []*Model `json:"models"`
 	DefaultModel string   `json:"defaultModel"`
 }
@@ -83,6 +88,10 @@ func GetAppConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
+	if appConfig.Version != configFileVersion {
+		return nil, errors.Errorf("We only support config version %s", configFileVersion)
+	}
+
 	return &appConfig, nil
 }
 
@@ -101,7 +110,8 @@ func InitAppConfig() error {
 
 	// Create the file or replace it if it exists
 	c, err := json.MarshalIndent(&AppConfig{
-		Models: []*Model{},
+		Version: configFileVersion,
+		Models:  []*Model{},
 	}, "", "  ")
 	if err != nil {
 		return err

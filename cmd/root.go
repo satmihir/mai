@@ -5,6 +5,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/satmihir/mai/cmd/chat"
 	"github.com/satmihir/mai/cmd/config"
 	"github.com/spf13/cobra"
 )
@@ -27,6 +28,9 @@ func Execute() {
 
 func init() {
 	RootCmd.AddCommand(config.ConfigCmd)
+	RootCmd.AddCommand(chat.ChatCmd)
+
+	// Subcommands of chat
 
 	// Subcommands of config
 	config.ConfigCmd.AddCommand(config.ConfigInitCmd)
